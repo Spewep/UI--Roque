@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
-using System.Linq;
 
 public class PauseMenuUI : MonoBehaviour
 {
@@ -9,29 +8,25 @@ public class PauseMenuUI : MonoBehaviour
     public VisualTreeAsset pauseMenuUXML;
     public VisualTreeAsset settingsUXML;
     public VisualTreeAsset creditsUXML;
-    public VisualTreeAsset fadeOverlayUXML;
 
     private UIDocument uiDocument;
-    private VisualElement fadeOverlay;
     private bool isPaused = false;
 
     void Awake()
     {
         uiDocument = GetComponent<UIDocument>();
 
-        // Carrega overlay separado
-        fadeOverlay = fadeOverlayUXML.CloneTree();
-        uiDocument.rootVisualElement.Add(fadeOverlay);
-
-        // Inicializa menu de pause invisível
-        LoadUIImmediate(pauseMenuUXML);
+        // Carrega o menu de pause no início
+        LoadUI(pauseMenuUXML);
         SetGamePaused(false);
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
+        {
             ToggleMenu();
+        }
     }
 
     private void ToggleMenu()
@@ -43,48 +38,22 @@ public class PauseMenuUI : MonoBehaviour
     {
         isPaused = paused;
         Time.timeScale = paused ? 0f : 1f;
+        uiDocument.rootVisualElement.style.display = paused ? DisplayStyle.Flex : DisplayStyle.None;
 
         if (paused)
         {
-            FadeInOverlay();
-            LoadUI(pauseMenuUXML);
+            LoadUI(pauseMenuUXML); // Sempre volta para o menu principal ao pausar
+            UnityEngine.Cursor.lockState = CursorLockMode.None; // libera o mouse
+            UnityEngine.Cursor.visible = true; // mostra
         }
         else
         {
-            FadeOutOverlay();
-            FadeOut(uiDocument.rootVisualElement);
+            UnityEngine.Cursor.lockState = CursorLockMode.Locked; // trava (FPS style)
+            UnityEngine.Cursor.visible = false; // esconde
         }
     }
 
-    // ---------- Overlay ----------
-    private void FadeInOverlay(float targetOpacity = 0.5f, float duration = 0.3f)
-    {
-        fadeOverlay.style.display = DisplayStyle.Flex;
-        LeanTween.value(gameObject, fadeOverlay.resolvedStyle.opacity, targetOpacity, duration)
-            .setOnUpdate(val => fadeOverlay.style.opacity = val);
-    }
-
-    private void FadeOutOverlay(float duration = 0.3f)
-    {
-        LeanTween.value(gameObject, fadeOverlay.resolvedStyle.opacity, 0f, duration)
-            .setOnUpdate(val => fadeOverlay.style.opacity = val)
-            .setOnComplete(() => fadeOverlay.style.display = DisplayStyle.None);
-    }
-
-    // ---------- Carregamento de UI ----------
     private void LoadUI(VisualTreeAsset vta)
-    {
-        var root = uiDocument.rootVisualElement;
-
-        // Fade out do menu atual se existir (ignora overlay)
-        VisualElement currentMenu = root.Children().FirstOrDefault(e => e.style.display == DisplayStyle.Flex && e != fadeOverlay);
-        if (currentMenu != null)
-            FadeOut(currentMenu, () => LoadUIImmediate(vta));
-        else
-            LoadUIImmediate(vta);
-    }
-
-    private void LoadUIImmediate(VisualTreeAsset vta)
     {
         uiDocument.visualTreeAsset = vta;
         var root = uiDocument.rootVisualElement;
@@ -105,27 +74,22 @@ public class PauseMenuUI : MonoBehaviour
             SetupAnimatedButton(settingsButton, new Color(0.9f, 0.9f, 0.9f), new Color(0.7f, 0.7f, 0.7f));
             SetupAnimatedButton(creditsButton, new Color(0.9f, 0.9f, 0.9f), new Color(0.7f, 0.7f, 0.7f));
             SetupAnimatedButton(quitButton, new Color(0.9f, 0.9f, 0.9f), new Color(0.7f, 0.7f, 0.7f));
-
-            FadeIn(root);
         }
         else if (vta == settingsUXML || vta == creditsUXML)
         {
             var backButton = root.Q<Button>("BackToMenu");
             backButton.clicked += () => LoadUI(pauseMenuUXML);
-            SetupAnimatedButton(backButton, new Color(0.9f, 0.9f, 0.9f), new Color(0.7f, 0.7f, 0.7f));
 
-            FadeIn(root);
+            SetupAnimatedButton(backButton, new Color(0.9f, 0.9f, 0.9f), new Color(0.7f, 0.7f, 0.7f));
         }
     }
 
-    // ---------- Botões animados ----------
     private void SetupAnimatedButton(Button button, Color hoverColor, Color clickColor)
     {
         Color normalColor = Color.white;
         float animTime = 0.15f;
         float scaleAmount = 1.05f;
 
-        // Hover entra
         button.RegisterCallback<MouseEnterEvent>(evt =>
         {
             LeanTween.value(gameObject,
@@ -139,7 +103,6 @@ public class PauseMenuUI : MonoBehaviour
             }).setEase(LeanTweenType.easeOutBack);
         });
 
-        // Hover sai
         button.RegisterCallback<MouseLeaveEvent>(evt =>
         {
             LeanTween.value(gameObject,
@@ -153,7 +116,6 @@ public class PauseMenuUI : MonoBehaviour
             }).setEase(LeanTweenType.easeOutBack);
         });
 
-        // Clique
         button.RegisterCallback<ClickEvent>(evt =>
         {
             LeanTween.value(gameObject,
@@ -169,31 +131,13 @@ public class PauseMenuUI : MonoBehaviour
         });
     }
 
-    private void FadeOut(VisualElement element, System.Action onComplete = null, float duration = 0.3f)
-    {
-        LeanTween.value(gameObject, element.resolvedStyle.opacity, 0f, duration)
-            .setOnUpdate(val => element.style.opacity = val)
-            .setOnComplete(() =>
-            {
-                element.style.display = DisplayStyle.None;
-                onComplete?.Invoke();
-            });
-    }
-
-    private void FadeIn(VisualElement element, float duration = 0.3f)
-    {
-        element.style.display = DisplayStyle.Flex;
-        element.style.opacity = 0f;
-        LeanTween.value(gameObject, 0f, 1f, duration)
-            .setOnUpdate(val => element.style.opacity = val);
-    }
-
     private void OnQuitClicked()
     {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
         SceneManager.LoadScene("MainMenu");
+        // ou Application.Quit();
 #endif
     }
 }

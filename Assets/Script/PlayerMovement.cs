@@ -23,8 +23,11 @@ public class PlayerMovement : MonoBehaviour
     private bool canRun = true;
     private bool zeroStamina = false;
 
-    [Header("Later")]
-
+    [Header("HUD")]
+    public Image staminaImage;
+    public Color fullColor = Color.green;
+    public Color halfColor = Color.yellow;
+    public Color lowColor = Color.red;
 
     private Vector3 moveDirection = Vector3.zero;
     private Vector3 inputDirection = Vector3.zero;
@@ -34,6 +37,7 @@ public class PlayerMovement : MonoBehaviour
     {
         cc = GetComponent<CharacterController>();
         stamina = maxStamina;
+        UpdateHUD();
     }
 
     void Update()
@@ -112,16 +116,34 @@ public class PlayerMovement : MonoBehaviour
                 if (stamina > maxStamina) stamina = maxStamina;
             }
         }
+
+        UpdateHUD();
     }
     public void SetMovementEnabled(bool enabled)
     {
         canMove = enabled;
+    }
+    void UpdateHUD()
+    {
+        if (staminaImage != null)
+        {
+            float fill = stamina / maxStamina;
+            staminaImage.fillAmount = fill;
+
+            if (fill > 0.5f)
+                staminaImage.color = fullColor;
+            else if (fill > 0.2f)
+                staminaImage.color = halfColor;
+            else
+                staminaImage.color = lowColor;
+        }
     }
     public void ResetPlayer()
     {
         stamina = maxStamina;
         canRun = true;
         zeroStamina = false;
+        UpdateHUD();
     }
 
 }

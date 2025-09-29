@@ -29,18 +29,31 @@ public class PlayerData : MonoBehaviour
         points = PlayerPrefs.GetInt("Points", 0);
         level = PlayerPrefs.GetInt("Level", 0);
         currentXP = PlayerPrefs.GetInt("XP", 0);
+
+        UpdateHUD();
+    }
+
+    void Update()
+    {
+        // Se apertar R, reseta os dados
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            ResetData();
+        }
     }
 
     // ===== Dinheiro e Pontos =====
     public void AddMoney(int amount)
     {
         money += amount;
+        UpdateHUD();
     }
 
     public void AddPoints(int amount)
     {
         points += amount;
         AddXP(amount);
+        UpdateHUD();
     }
 
     // ===== Sistema de XP e Level =====
@@ -52,11 +65,21 @@ public class PlayerData : MonoBehaviour
             currentXP -= XPToNextLevel();
             level++;
         }
+        UpdateHUD();
     }
 
     int XPToNextLevel()
     {
         return 2 * (int)Mathf.Pow(2, level);
+    }
+
+    void UpdateHUD()
+    {
+        if (moneyText != null) moneyText.text = "Dinheiro: " + money;
+        if (pointsText != null) pointsText.text = "Pontos: " + points;
+        if (levelText != null) levelText.text = "Nível: " + level;
+        if (xpBar != null)
+            xpBar.fillAmount = (float)currentXP / XPToNextLevel();
     }
 
     // ===== Salvar =====
@@ -69,10 +92,12 @@ public class PlayerData : MonoBehaviour
         PlayerPrefs.Save();
         Debug.Log("Dados salvos!");
     }
+
     private void OnApplicationQuit()
     {
         SaveData();
     }
+
     public void ResetData()
     {
         PlayerPrefs.DeleteKey("Money");
@@ -87,6 +112,7 @@ public class PlayerData : MonoBehaviour
             PlayerData.Instance.points = 0;
             PlayerData.Instance.level = 0;
             PlayerData.Instance.currentXP = 0;
+            PlayerData.Instance.UpdateHUD();
         }
 
         Debug.Log("PlayerData resetado!");

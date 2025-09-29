@@ -37,10 +37,17 @@ public class PlayerAttack : MonoBehaviour
             {
                 money += 1;
                 points += 1;
+                UpdateHUD();
                 playerData.AddMoney(1);
                 playerData.AddPoints(1);
             }
         }
         Debug.DrawRay(origin, direction * attackRange, Color.red, 0.5f);
+    }
+
+    void UpdateHUD()
+    {
+        if (moneyText != null) moneyText.text = "Dinheiro: " + money;
+        if (pointsText != null) pointsText.text = "Pontos: " + points;
     }
 }
