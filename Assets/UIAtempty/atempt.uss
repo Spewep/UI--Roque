@@ -1,0 +1,43 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="pauseMenu">
+        <ui:Button name="resumeButton" text="Resume" />
+        <ui:Button name="settingsButton" text="Settings" />
+        <ui:Button name="creditsButton" text="Credits" />
+        <ui:Button name="quitButton" text="Quit" />
+    </ui:VisualElement>
+
+    <ui:VisualElement name="settingsMenu" style="display: none;">
+        <ui:Label text="Configurações" />
+        <ui:Button name="backFromSettingsButton" text="Back" />
+    </ui:VisualElement>
+
+    <ui:VisualElement name="creditsMenu" style="display: none;">
+        <ui:Label text="Créditos do Jogo" />
+        <ui:Button name="backFromCreditsButton" text="Back" />
+    </ui:VisualElement>
+</ui:UXML>
+
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- Fundo preto -->
+    <ui:VisualElement name="overlay" style="background-color: black; opacity: 0; position: absolute; left:0; top:0; right:0; bottom:0;" />
+
+    <!-- Menu principal -->
+    <ui:VisualElement name="pauseMenu">
+        <ui:Button name="resumeButton" text="Resume" />
+        <ui:Button name="settingsButton" text="Settings" />
+        <ui:Button name="creditsButton" text="Credits" />
+        <ui:Button name="quitButton" text="Quit" />
+    </ui:VisualElement>
+
+    <!-- Settings -->
+    <ui:VisualElement name="settingsMenu" style="display: none;">
+        <ui:Label text="Configurações" />
+        <ui:Button name="BackToMenu" text="Back" />
+    </ui:VisualElement>
+
+    <!-- Credits -->
+    <ui:VisualElement name="creditsMenu" style="display: none;">
+        <ui:Label text="Créditos" />
+        <ui:Button name="BackToMenu" text="Back" />
+    </ui:VisualElement>
+</ui:UXML>
